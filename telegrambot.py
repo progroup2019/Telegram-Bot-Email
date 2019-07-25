@@ -4,10 +4,13 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, InputTextM
 from telebot import types
 from datetime import datetime
 
+from src.Imap import get_inbox
+
 TOKEN = '839372173:AAE11WbqFHXUQyxCgk9erTpiJWi9rGg8ctw' # token by @BotFather
 actual_chat_id = ""
 def connect_email(user, password):
-    return True
+    mails = get_inbox(user, password)
+    return True, mails
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -50,9 +53,13 @@ def message_type(message):
         data = message.text.split(' ')
         user = data[0][8:]
         password = data[1]
-        if connect_email(user,password):
+        connected, mails = connect_email(user,password)
+        if connected:
             bot.reply_to(message, "Nice")
             bot.send_sticker(message.chat.id,"https://www.gstatic.com/webp/gallery/2.webp")
+            bot.send_message(message.chat.id, "This is your mailbox :D")
+            for mail in mails:
+                bot.send_message(message.chat.id, mail)
         else:
             bot.reply_to(message, "Mail or password wrong")
             bot.send_sticker(message.chat.id,"https://www.gstatic.com/webp/gallery/5.webp")

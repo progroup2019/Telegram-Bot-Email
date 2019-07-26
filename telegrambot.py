@@ -6,7 +6,7 @@ from datetime import datetime
 
 from src.Imap import get_inbox
 
-TOKEN = '839372173:AAE11WbqFHXUQyxCgk9erTpiJWi9rGg8ctw' # token by @BotFather
+TOKEN = '754169521:AAFKQkWZzZBV6_ty2jJfmkXcwvPnBgCw3AM' # token by @BotFather
 actual_chat_id = ""
 def connect_email(user, password):
     mails = get_inbox(user, password)

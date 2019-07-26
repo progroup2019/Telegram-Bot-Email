@@ -1,0 +1,58 @@
+import imaplib, email, smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+
+def get_inbox(Email, Password):
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    (retcode, capabilities) = mail.login(Email, Password)
+    mail.list()
+    mail.select('inbox')
+    n = 0
+    messages = []
+    response = []
+    (retcode, messages_primary) = mail.search(None, 'X-GM-RAW', 'category:primary')
+    (retcode, messages_unread) = mail.search(None, 'X-GM-RAW', 'in:unread')
+    if retcode == 'OK':
+        messages_primary = messages_primary[0].split()
+        messages_unread = messages_unread[0].split()
+        for message in messages_primary:
+            if message in messages_unread:
+                messages.append(message)
+    for num in messages:
+        n = n + 1
+        typ, data = mail.fetch(num, '(RFC822)')
+        for response_part in data:
+            if isinstance(response_part, tuple):
+                typ, data = mail.store(num, '-FLAGS', '\\Seen')
+                original = email.message_from_string(response_part[1].decode("utf-8", 'ignore'))
+                response.append('[' + str(n) + '] FROM: ' + original['From'] + ' - SUBJECT:' + original['Subject'])
+    mail.close()
+    mail.logout()
+    return response
+
+
+"""
+Function to send a mail
+"""
+def sendMail(content, to, subject, file_names, YourGmailUsername, YourGmailPassword):
+    smtp_ssl_host = 'smtp.gmail.com'
+    smtp_ssl_port = 465
+    username = YourGmailUsername
+    password = YourGmailPassword
+    msg = MIMEMultipart()
+    msg['Subject'] = subject
+    msg['From'] = YourGmailUsername
+    msg['To'] = to
+    body = MIMEText(content)
+    msg.attach(body)
+    server = smtplib.SMTP_SSL(smtp_ssl_host, smtp_ssl_port)
+    server.login(username, password)
+    try:
+        server.sendmail(YourGmailUsername, to, msg.as_string())
+        server.quit()
+        return 1
+    except:
+        server.quit()
+        return 0
+

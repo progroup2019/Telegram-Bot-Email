@@ -4,9 +4,9 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, InputTextM
 from telebot import types
 from datetime import datetime
 
-from src.Imap import get_inbox
+from src.Imap import *
 
-TOKEN = '839372173:AAE11WbqFHXUQyxCgk9erTpiJWi9rGg8ctw' # token by @BotFather
+TOKEN = '754169521:AAFKQkWZzZBV6_ty2jJfmkXcwvPnBgCw3AM' # token by @BotFather
 actual_chat_id = ""
 def connect_email(user, password):
     mails = get_inbox(user, password)
@@ -40,7 +40,7 @@ def send_welcome(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
     if call.data == "cb_yes":
-        bot.send_message(call.message.chat.id, "Enter (connect:) your username and password separated by a space, for example: connect:user 12345")
+        bot.send_message(call.message.chat.id, "Enter (connect:) your username and password separated by a space, to see your unread messages. For example: connect:user 12345 \n Enter (send_mail:) your username, password, to, subject and content, to send an email. For example: send_mail:user 12345 user2 hello good morning")
     elif call.data == "cb_no":
         bot.send_message(call.message.chat.id, "Ok, I will be here yo help you")
 
@@ -63,6 +63,19 @@ def message_type(message):
         else:
             bot.reply_to(message, "Mail or password wrong")
             bot.send_sticker(message.chat.id,"https://www.gstatic.com/webp/gallery/5.webp")
+    elif message.text[0:10].lower()=='send_mail:':
+        data = message.text.split(' ')
+        user = data[0][10:]
+        password = data[1]
+        to = data[2]
+        subject = data[3]
+        content = " ".join(data[4:])
+        file_names = []
+        if sendMail(content, to, subject, file_names, user, password):
+            print('Email send')
+        else:
+            print('Email not send')
+
     # bot.sendSticker(message.)
 
 bot.polling()

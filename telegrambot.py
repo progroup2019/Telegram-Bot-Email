@@ -72,9 +72,11 @@ def message_type(message):
         content = " ".join(data[4:])
         file_names = []
         if sendMail(content, to, subject, file_names, user, password):
-            print('Email send')
+            bot.reply_to(message, "Email sended correctly")
         else:
-            print('Email not send')
+            bot.reply_to(message, "Error sending mail")
+    else:
+        bot.reply_to(message, "Wrong command")
 
     # bot.sendSticker(message.)
 

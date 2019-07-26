@@ -1,5 +1,7 @@
-import imaplib, email
-
+import imaplib, email, smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
 
 def get_inbox(Email, Password):
     mail = imaplib.IMAP4_SSL('imap.gmail.com')
@@ -28,3 +30,29 @@ def get_inbox(Email, Password):
     mail.close()
     mail.logout()
     return response
+
+
+"""
+Function to send a mail
+"""
+def sendMail(content, to, subject, file_names, YourGmailUsername, YourGmailPassword):
+    smtp_ssl_host = 'smtp.gmail.com'
+    smtp_ssl_port = 465
+    username = YourGmailUsername
+    password = YourGmailPassword
+    msg = MIMEMultipart()
+    msg['Subject'] = subject
+    msg['From'] = YourGmailUsername
+    msg['To'] = to
+    body = MIMEText(content)
+    msg.attach(body)
+    server = smtplib.SMTP_SSL(smtp_ssl_host, smtp_ssl_port)
+    server.login(username, password)
+    try:
+        server.sendmail(YourGmailUsername, to, msg.as_string())
+        server.quit()
+        return 1
+    except:
+        server.quit()
+        return 0
+

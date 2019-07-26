@@ -1,9 +1,11 @@
+# coding=utf-8
+
 import telebot # Importamos las librería
 #pip install pyTelegramBotAPI
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, InputTextMessageContent
 from telebot import types
 from datetime import datetime
-
+import re
 from src.Imap import *
 
 TOKEN = '754169521:AAFKQkWZzZBV6_ty2jJfmkXcwvPnBgCw3AM' # token by @BotFather
@@ -45,10 +47,13 @@ def callback_query(call):
         bot.send_message(call.message.chat.id, "Ok, I will be here yo help you")
 
 
+def print_message(message):
+    bot.reply_to(message, "Prueba exitosa")
 
 # Handle all other messages with content_type 'text' (content_types defaults to ['text'])
 @bot.message_handler(func=lambda message: True)
 def message_type(message):
+    pattern = re.compile('^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$')
     if message.text[0:8].lower()=='connect:':
         data = message.text.split(' ')
         user = data[0][8:]
@@ -71,12 +76,15 @@ def message_type(message):
         subject = data[3]
         content = " ".join(data[4:])
         file_names = []
-        if sendMail(content, to, subject, file_names, user, password):
-            bot.reply_to(message, "Email sended correctly")
+        if pattern.match(to):    
+            if sendMail(content, to, subject, file_names, user, password):
+                bot.reply_to(message, "Email sended correctly")
+            else:
+                bot.reply_to(message, "Error sending mail")
         else:
-            bot.reply_to(message, "Error sending mail")
+            bot.reply_to(message,"Receiver's email invalid")
     else:
-        bot.reply_to(message, "Wrong command")
+        bot.reply_to(message, "Wrong command, write /help to obtain information about the commands enableds")
 
     # bot.sendSticker(message.)
 

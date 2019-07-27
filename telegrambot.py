@@ -8,6 +8,8 @@ from datetime import datetime
 import re
 from src.Imap import *
 
+from src.Imap import get_inbox
+
 TOKEN = '754169521:AAFKQkWZzZBV6_ty2jJfmkXcwvPnBgCw3AM' # token by @BotFather
 actual_chat_id = ""
 email = ""
@@ -94,7 +96,7 @@ def message_type(message):
         subject = data[3]
         content = " ".join(data[4:])
         file_names = []
-        if pattern.match(to):    
+        if pattern.match(to):
             if sendMail(content, to, subject, file_names, user, password):
                 bot.reply_to(message, "Email sended correctly")
             else:

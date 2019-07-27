@@ -56,3 +56,14 @@ def sendMail(content, to, subject, file_names, YourGmailUsername, YourGmailPassw
         server.quit()
         return 0
 
+"""
+Function to verify credentials
+"""
+def verifyLogin(email,password):
+    try:
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        (retcode, capabilities) = mail.login(email, password)
+        mail.logout()
+        return True
+    except:
+        return False

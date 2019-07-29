@@ -11,12 +11,17 @@ from src.Imap import *
 from src.Imap import get_inbox
 
 TOKEN = '754169521:AAFKQkWZzZBV6_ty2jJfmkXcwvPnBgCw3AM' # token by @BotFather
+
+#User data
 actual_chat_id = ""
 email = ""
 password = ""
-def connect_email(user, password):
-    mails = get_inbox(user, password)
-    return True, mails
+
+#email sender parameters
+to = ""
+subject = ""
+content = ""
+file_names = []
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -27,8 +32,14 @@ def gen_markup():
     markup.add(InlineKeyboardButton("Yes", callback_data="cb_yes"), InlineKeyboardButton("No", callback_data="cb_no"))
     return markup
 
-# Handle '/start' and '/help'
-@bot.message_handler(commands=['help', 'start'])
+# Handle '/help'
+@bot.message_handler(commands=['help'])
+def explain_bot_process(message):
+    explain = "Hello, this is a bot that will help you see your inbox and send emails with just a few commands, to start this process you must type the command '/start'"
+    bot.send_message(message.chat.id, explain)
+
+# Handle '/start'
+@bot.message_handler(commands=['start'])
 def send_welcome(message):
     hour = datetime.now().hour
     if 18 > hour >=12:
@@ -54,20 +65,77 @@ def callback_query(call):
 
 
 def registerEmailAndPassword(message):
+    global email
+    global password
     try:
         data = message.text.split(' ')
         email = data[0]
         password = data[1]
         result = verifyLogin(email, password)
         if (result ==  True):
-            msg = bot.reply_to(message, "All ok, do you want send an email or see your unread messages?")
+            msg = bot.reply_to(message, "All ok you are connected to your mail, to disconect put 'disconect', do you want send an email or see your unread messages? (To see your unread messages put 'see unread messages' and to send put 'send mail')")
+            bot.send_sticker(message.chat.id,"https://www.gstatic.com/webp/gallery/2.webp")
+            bot.register_next_step_handler(msg, user_choice)
         else:
             msg = bot.reply_to(message, "Wrong user or password, please enter your email and password separated by a space.")
+            bot.send_sticker(message.chat.id,"https://www.gstatic.com/webp/gallery/2.webp")
             bot.register_next_step_handler(msg, registerEmailAndPassword)
        # bot.register_next_step_handler(msg, process_age_step)
     except Exception as e:
         print(e)
         bot.reply_to(message, 'oooops')
+
+def user_choice(message):
+    global email
+    global password
+    if message.text.lower() == "see unread messages":
+        mails = get_inbox(email, password)
+        for mail in mails:
+            bot.send_message(message.chat.id, mail)
+        msg = bot.send_message(message.chat.id, "=D go another command!")
+        bot.register_next_step_handler(msg, user_choice)
+    elif message.text.lower() == "send mail":
+        msg = bot.send_message(message.chat.id, "Who do you want to send the mail to? (put the email correct, example: example@yopmail.com)")
+        bot.register_next_step_handler(msg, send_mail_one)
+    elif message.text.lower() == "disconnect":
+        email = ""
+        password = ""
+        bot.reply_to(message,"You have disconnected, to reconnect remember to use the '/start' command to start my process again")
+    else:
+        msg = bot.reply_to(message, "Unknown command, the commands available are: 'send mail, see unread mails and disconect'")
+        msg = bot.send_message(message.chat.id, "=D go another command!")
+        bot.register_next_step_handler(msg, user_choice)
+
+#Set the To of the mail
+def send_mail_one(message):
+    global to
+    to = message.text.lower()
+    msg = bot.send_message(message.chat.id, "Place the subject of the mail (example: My Subject Oh Yeah)")
+    bot.register_next_step_handler(msg, send_mail_two)
+
+#Set the Subject of the mail
+def send_mail_two(message):
+    global subject
+    subject = message.text
+    msg = bot.send_message(message.chat.id, "Place the content of the mail (example: Hi, this is my content.)")
+    bot.register_next_step_handler(msg, send_mail_three)
+
+#Set the Content of the mail
+def send_mail_three(message):
+    global content
+    global subject
+    global to
+    global file_names
+    global email
+    global password
+    content = message.text
+    if sendMail(content, to, subject, file_names, email, password):
+        bot.send_message(message.chat.id, "Mail sent successfully")
+    else:
+        bot.send_message(message.chat.id, "Error sending mail")
+    msg = bot.send_message(message.chat.id, "=D Go another command!")
+    bot.register_next_step_handler(msg, user_choice)
+
 
 
 # Handle all other messages with content_type 'text' (content_types defaults to ['text'])

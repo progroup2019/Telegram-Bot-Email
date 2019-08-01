@@ -1,8 +1,11 @@
-import imaplib, email, smtplib
+import imaplib, email, smtplib, os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 
+"""
+Function to get all messages than not be readed
+"""
 def get_inbox(Email, Password):
     mail = imaplib.IMAP4_SSL('imap.gmail.com')
     (retcode, capabilities) = mail.login(Email, Password)
@@ -35,7 +38,7 @@ def get_inbox(Email, Password):
 """
 Function to send a mail
 """
-def sendMail(content, to, subject, file_names, YourGmailUsername, YourGmailPassword):
+def send_mail(content, to, subject, file_names, YourGmailUsername, YourGmailPassword):
     smtp_ssl_host = 'smtp.gmail.com'
     smtp_ssl_port = 465
     username = YourGmailUsername
@@ -48,6 +51,14 @@ def sendMail(content, to, subject, file_names, YourGmailUsername, YourGmailPassw
     msg.attach(body)
     server = smtplib.SMTP_SSL(smtp_ssl_host, smtp_ssl_port)
     server.login(username, password)
+    for file in file_names:
+        #left validate every file here
+        part = MIMEBase('application', "octet-stream")
+        part.set_payload( open(file,"rb").read() )
+        email.encoders.encode_base64(part)
+        part.add_header('Content-Disposition', 'attachment; filename="%s"'
+                       % os.path.basename(file))
+        msg.attach(part)
     try:
         server.sendmail(YourGmailUsername, to, msg.as_string())
         server.quit()
@@ -56,3 +67,28 @@ def sendMail(content, to, subject, file_names, YourGmailUsername, YourGmailPassw
         server.quit()
         return 0
 
+"""
+Function to verify credentials
+"""
+def verify_login(email,password):
+    try:
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        (retcode, capabilities) = mail.login(email, password)
+        mail.logout()
+        return True
+    except:
+        return False
+
+#Using regex to obtain all urls in a text
+def take_urls(text):
+    urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+    return urls
+
+#verify all urls with WOT api
+def verify_urls(urls):
+    # reports = wot_reports_for_domains(urls, KEY)
+    secure = True
+    # for report in reports:
+    #     print (parse_attributes_for_report(report))
+    #     #validate for secure
+    return secure

@@ -1,7 +1,8 @@
-import imaplib, email, smtplib
+import imaplib, email, smtplib, os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
+
 
 def get_inbox(Email, Password):
     mail = imaplib.IMAP4_SSL('imap.gmail.com')
@@ -52,7 +53,7 @@ def sendMail(content, to, subject, file_names, YourGmailUsername, YourGmailPassw
         #left validate every file here
         part = MIMEBase('application', "octet-stream")
         part.set_payload( open(file,"rb").read() )
-        Encoders.encode_base64(part)
+        email.encoders.encode_base64(part)
         part.add_header('Content-Disposition', 'attachment; filename="%s"'
                        % os.path.basename(file))
         msg.attach(part)

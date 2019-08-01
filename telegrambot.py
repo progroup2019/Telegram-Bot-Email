@@ -6,9 +6,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, InputTextM
 from telebot import types
 from datetime import datetime
 import re
-from src.Imap import *
-
-from src.Imap import get_inbox
+from src.Imap import get_inbox, sendMail, verifyLogin
 
 TOKEN = '754169521:AAFKQkWZzZBV6_ty2jJfmkXcwvPnBgCw3AM' # token by @BotFather
 
@@ -201,14 +199,5 @@ def message_type(message):
     else:
         bot.reply_to(message, "Wrong command, write /help to obtain information about the commands enableds")
 
-    # bot.sendSticker(message.)
-# Enable saving next step handlers to file "./.handlers-saves/step.save".
-# Delay=2 means that after any change in next step handlers (e.g. calling register_next_step_handler())
-# saving will hapen after delay 2 seconds.
-bot.enable_save_next_step_handlers(delay=2)
-
-# Load next_step_handlers from save file (default "./.handlers-saves/step.save")
-# WARNING It will work only if enable_save_next_step_handlers was called!
-bot.load_next_step_handlers()
 
 bot.polling()

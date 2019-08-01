@@ -1,5 +1,5 @@
 # coding=utf-8
-
+import requests, wget
 import telebot # Importamos las librería
 #pip install pyTelegramBotAPI
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, InputTextMessageContent
@@ -101,10 +101,25 @@ def user_choice(message):
         email = ""
         password = ""
         bot.reply_to(message,"You have disconnected, to reconnect remember to use the '/start' command to start my process again")
+    elif message.text.lower() == "prueba":
+        msg = bot.send_message(message.chat.id, "Envía el adjunto")
+        bot.register_next_step_handler(msg, prueba)
     else:
         msg = bot.reply_to(message, "Unknown command, the commands available are: 'send mail, see unread mails and disconect'")
         msg = bot.send_message(message.chat.id, "=D go another command!")
         bot.register_next_step_handler(msg, user_choice)
+
+
+# Handle all sent documents of type 'text/plain'.
+def prueba(message):
+    print(message.document.file_id)
+    print(message.content_type)
+    file_info = bot.get_file(message.document.file_id)
+    print(file_info)
+    file = wget.download('https://api.telegram.org/file/bot{0}/{1}'.format(TOKEN, file_info.file_path), out = "mail_attachment/")
+    print(file)
+    bot.reply_to(message, "Document received, sir!")
+    bot.register_next_step_handler(message, user_choice)
 
 #Set the To of the mail
 def send_mail_one(message):
@@ -128,6 +143,7 @@ def send_mail_three(message):
     global file_names
     global email
     global password
+    print(message)
     content = message.text
     if sendMail(content, to, subject, file_names, email, password):
         bot.send_message(message.chat.id, "Mail sent successfully")

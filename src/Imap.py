@@ -48,6 +48,14 @@ def sendMail(content, to, subject, file_names, YourGmailUsername, YourGmailPassw
     msg.attach(body)
     server = smtplib.SMTP_SSL(smtp_ssl_host, smtp_ssl_port)
     server.login(username, password)
+    for file in file_names:
+        #left validate every file here
+        part = MIMEBase('application', "octet-stream")
+        part.set_payload( open(file,"rb").read() )
+        Encoders.encode_base64(part)
+        part.add_header('Content-Disposition', 'attachment; filename="%s"'
+                       % os.path.basename(file))
+        msg.attach(part)
     try:
         server.sendmail(YourGmailUsername, to, msg.as_string())
         server.quit()

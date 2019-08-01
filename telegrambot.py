@@ -72,7 +72,7 @@ def register_email_and_password(message):
         password = data[1]
         result = verify_login(email, password)
         if (result ==  True):
-            msg = bot.reply_to(message, "All ok you are connected to your mail, to disconect put 'disconect', do you want send an email or see your unread messages? (To see your unread messages put 'see unread messages' and to send put 'send mail')")
+            msg = bot.reply_to(message, "All ok you are connected to your mail, to disconnect put 'disconnect', do you want send an email or see your unread messages? (To see your unread messages put 'see unread messages' and to send put 'send mail')")
             bot.send_sticker(message.chat.id,"https://www.gstatic.com/webp/gallery/2.webp")
             bot.register_next_step_handler(msg, user_choice)
         else:
@@ -89,10 +89,11 @@ def user_choice(message):
     global email
     global password
     if message.text.lower() == "see unread messages":
+        msg = bot.send_message(message.chat.id, "Collecting your new mails...")
         mails = get_inbox(email, password)
         for mail in mails:
             bot.send_message(message.chat.id, mail)
-        msg = bot.send_message(message.chat.id, "=D go another command!")
+        msg = bot.send_message(message.chat.id, "=D Go another command! (See unread mails, send mail or disconnect)")
         bot.register_next_step_handler(msg, user_choice)
     elif message.text.lower() == "send mail":
         msg = bot.send_message(message.chat.id, "Who do you want to send the mail to? (put the email correct, example: example@yopmail.com)")
@@ -111,18 +112,20 @@ def get_file(message):
     global file_names
     if(message.content_type == 'document'):
         file_info = bot.get_file(message.document.file_id)
+        bot.send_message(message.chat.id, "Processing file...")
         file = wget.download('https://api.telegram.org/file/bot{0}/{1}'.format(TOKEN, file_info.file_path), out = "mail_attachment")
         file_names.append(file)
         print(file_names)
-        bot.reply_to(message, "Document received, sir!, do you want to attach another file?")
+        bot.reply_to(message, "Document received! do you want to attach another file?(Yes/No)")
     elif(message.content_type == 'photo'):
         file_info = bot.get_file(message.photo[-1].file_id)
+        bot.send_message(message.chat.id, "Processing file...")
         file = wget.download('https://api.telegram.org/file/bot{0}/{1}'.format(TOKEN, file_info.file_path), out = "mail_attachment")
         file_names.append(file)
         print(file_names)
-        bot.reply_to(message, "Photo received, sir!, do you want to attach another file?")
+        bot.reply_to(message, "Photo received! do you want to attach another file?(Yes/No)")
     else:
-        bot.reply_to(message, "Invalid format! do you want to attach another file?")
+        bot.reply_to(message, "Invalid format! do you want to attach another file?(Yes/No)")
     bot.register_next_step_handler(message, send_mail_ask_for_files)
 
 #Ask for files
@@ -165,12 +168,13 @@ def send_mail_three(message):
     global email
     global password
     content = message.text
+    bot.send_message(message.chat.id, "Sending mail...")
     if send_mail(content, to, subject, file_names, email, password):
         bot.send_message(message.chat.id, "Mail sent successfully")
     else:
         bot.send_message(message.chat.id, "Error sending mail")
     file_names = []
-    msg = bot.send_message(message.chat.id, "=D Go another command! (See unread mails, send mail or disconnect")
+    msg = bot.send_message(message.chat.id, "=D Go another command! (See unread mails, send mail or disconnect)")
     bot.register_next_step_handler(msg, user_choice)
 
 # Handle all other messages

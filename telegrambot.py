@@ -111,15 +111,27 @@ def user_choice(message):
 
 
 # Handle all sent documents of type 'text/plain'.
-def prueba(message):
-    print(message.document.file_id)
-    print(message.content_type)
+def get_file(message):
+    global file_names
     file_info = bot.get_file(message.document.file_id)
-    print(file_info)
-    file = wget.download('https://api.telegram.org/file/bot{0}/{1}'.format(TOKEN, file_info.file_path), out = "mail_attachment/")
-    print(file)
-    bot.reply_to(message, "Document received, sir!")
-    bot.register_next_step_handler(message, user_choice)
+    file = wget.download('https://api.telegram.org/file/bot{0}/{1}'.format(TOKEN, file_info.file_path), out = "mail_attachment")
+    file_names.append(file)
+    print(file_names)
+    bot.reply_to(message, "Document received, sir!, do you want to attach another file?")
+    bot.register_next_step_handler(message, send_mail_ask_for_files)
+
+#Ask for files
+def send_mail_ask_for_files(message):
+    if(message.text.lower() == "yes"):
+        msg = bot.reply_to(message, "Send the file that you want to attach")
+        bot.register_next_step_handler(msg, get_file)
+    elif(message.text.lower() == "no"):
+        msg = bot.reply_to(message, "Place the content of the mail (example: Hi, this is my content.)")
+        bot.register_next_step_handler(msg,send_mail_three)
+    else:
+        msg = bot.reply_to(message, "Wrong answer... Do you want to attach a file? (YES/NO)")
+        bot.register_next_step_handler(msg, send_mail_ask_for_files)
+
 
 #Set the To of the mail
 def send_mail_one(message):
@@ -132,8 +144,8 @@ def send_mail_one(message):
 def send_mail_two(message):
     global subject
     subject = message.text
-    msg = bot.send_message(message.chat.id, "Place the content of the mail (example: Hi, this is my content.)")
-    bot.register_next_step_handler(msg, send_mail_three)
+    msg = bot.send_message(message.chat.id, "Do you want to attach a file?")
+    bot.register_next_step_handler(msg, send_mail_ask_for_files)
 
 #Set the Content of the mail
 def send_mail_three(message):
@@ -143,7 +155,6 @@ def send_mail_three(message):
     global file_names
     global email
     global password
-    print(message)
     content = message.text
     if sendMail(content, to, subject, file_names, email, password):
         bot.send_message(message.chat.id, "Mail sent successfully")

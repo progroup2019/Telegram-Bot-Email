@@ -101,9 +101,9 @@ def user_choice(message):
         bot.reply_to(message,"You have disconnected, to reconnect remember to use the '/start' command to start my process again")
     elif message.text.lower() == "prueba":
         msg = bot.send_message(message.chat.id, "Envía el adjunto")
-        bot.register_next_step_handler(msg, prueba)
+        bot.register_next_step_handler(msg, get_file)
     else:
-        msg = bot.reply_to(message, "Unknown command, the commands available are: 'send mail, see unread mails and disconect'")
+        msg = bot.reply_to(message, "Unknown command, the commands available are: 'send mail, see unread mails and disconnect'")
         msg = bot.send_message(message.chat.id, "=D go another command!")
         bot.register_next_step_handler(msg, user_choice)
 
@@ -111,11 +111,14 @@ def user_choice(message):
 # Handle all sent documents of type 'text/plain'.
 def get_file(message):
     global file_names
-    file_info = bot.get_file(message.document.file_id)
-    file = wget.download('https://api.telegram.org/file/bot{0}/{1}'.format(TOKEN, file_info.file_path), out = "mail_attachment")
-    file_names.append(file)
-    print(file_names)
-    bot.reply_to(message, "Document received, sir!, do you want to attach another file?")
+    if(message.content_type == 'document'):
+        file_info = bot.get_file(message.document.file_id)
+        file = wget.download('https://api.telegram.org/file/bot{0}/{1}'.format(TOKEN, file_info.file_path), out = "mail_attachment")
+        file_names.append(file)
+        print(file_names)
+        bot.reply_to(message, "Document received, sir!, do you want to attach another file?")
+    else:
+        bot.reply_to(message, "Invalid format! do you want to attach another file?")
     bot.register_next_step_handler(message, send_mail_ask_for_files)
 
 #Ask for files
@@ -134,9 +137,14 @@ def send_mail_ask_for_files(message):
 #Set the To of the mail
 def send_mail_one(message):
     global to
+    pattern = re.compile('^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$')
     to = message.text.lower()
-    msg = bot.send_message(message.chat.id, "Place the subject of the mail (example: My Subject Oh Yeah)")
-    bot.register_next_step_handler(msg, send_mail_two)
+    if pattern.match(to):
+        msg = bot.send_message(message.chat.id, "Place the subject of the mail (example: My Subject Oh Yeah)")
+        bot.register_next_step_handler(msg, send_mail_two)
+    else:
+        msg = bot.reply_to(message, "Invalid format, please write again the receiver's email")
+        bot.register_next_step_handler(msg, send_mail_one)
 
 #Set the Subject of the mail
 def send_mail_two(message):
@@ -158,46 +166,10 @@ def send_mail_three(message):
         bot.send_message(message.chat.id, "Mail sent successfully")
     else:
         bot.send_message(message.chat.id, "Error sending mail")
-    msg = bot.send_message(message.chat.id, "=D Go another command!")
+    file_names = []
+    msg = bot.send_message(message.chat.id, "=D Go another command! (See unread mails, send mail or disconnect")
     bot.register_next_step_handler(msg, user_choice)
 
-
-
-# Handle all other messages with content_type 'text' (content_types defaults to ['text'])
-@bot.message_handler(func=lambda message: True)
-def message_type(message):
-    pattern = re.compile('^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$')
-    if message.text[0:8].lower()=='connect:':
-        data = message.text.split(' ')
-        user = data[0][8:]
-        password = data[1]
-        connected, mails = connect_email(user,password)
-        if connected:
-            bot.reply_to(message, "Nice")
-            bot.send_sticker(message.chat.id,"https://www.gstatic.com/webp/gallery/2.webp")
-            bot.send_message(message.chat.id, "This is your mailbox :D")
-            for mail in mails:
-                bot.send_message(message.chat.id, mail)
-        else:
-            bot.reply_to(message, "Mail or password wrong")
-            bot.send_sticker(message.chat.id,"https://www.gstatic.com/webp/gallery/5.webp")
-    elif message.text[0:10].lower()=='send_mail:':
-        data = message.text.split(' ')
-        user = data[0][10:]
-        password = data[1]
-        to = data[2]
-        subject = data[3]
-        content = " ".join(data[4:])
-        file_names = []
-        if pattern.match(to):
-            if sendMail(content, to, subject, file_names, user, password):
-                bot.reply_to(message, "Email sended correctly")
-            else:
-                bot.reply_to(message, "Error sending mail")
-        else:
-            bot.reply_to(message,"Receiver's email invalid")
-    else:
-        bot.reply_to(message, "Wrong command, write /help to obtain information about the commands enableds")
 
 
 bot.polling()

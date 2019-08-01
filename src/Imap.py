@@ -3,7 +3,9 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 
-
+"""
+Function to get all messages than not be readed
+"""
 def get_inbox(Email, Password):
     mail = imaplib.IMAP4_SSL('imap.gmail.com')
     (retcode, capabilities) = mail.login(Email, Password)
@@ -36,7 +38,7 @@ def get_inbox(Email, Password):
 """
 Function to send a mail
 """
-def sendMail(content, to, subject, file_names, YourGmailUsername, YourGmailPassword):
+def send_mail(content, to, subject, file_names, YourGmailUsername, YourGmailPassword):
     smtp_ssl_host = 'smtp.gmail.com'
     smtp_ssl_port = 465
     username = YourGmailUsername
@@ -68,7 +70,7 @@ def sendMail(content, to, subject, file_names, YourGmailUsername, YourGmailPassw
 """
 Function to verify credentials
 """
-def verifyLogin(email,password):
+def verify_login(email,password):
     try:
         mail = imaplib.IMAP4_SSL('imap.gmail.com')
         (retcode, capabilities) = mail.login(email, password)

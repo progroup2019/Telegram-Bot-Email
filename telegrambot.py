@@ -114,6 +114,12 @@ def get_file(message):
         file_names.append(file)
         print(file_names)
         bot.reply_to(message, "Document received, sir!, do you want to attach another file?")
+    elif(message.content_type == 'photo'):
+        file_info = bot.get_file(message.photo[-1].file_id)
+        file = wget.download('https://api.telegram.org/file/bot{0}/{1}'.format(TOKEN, file_info.file_path), out = "mail_attachment")
+        file_names.append(file)
+        print(file_names)
+        bot.reply_to(message, "Photo received, sir!, do you want to attach another file?")
     else:
         bot.reply_to(message, "Invalid format! do you want to attach another file?")
     bot.register_next_step_handler(message, send_mail_ask_for_files)

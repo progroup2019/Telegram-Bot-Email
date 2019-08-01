@@ -99,9 +99,6 @@ def user_choice(message):
         email = ""
         password = ""
         bot.reply_to(message,"You have disconnected, to reconnect remember to use the '/start' command to start my process again")
-    elif message.text.lower() == "prueba":
-        msg = bot.send_message(message.chat.id, "Envía el adjunto")
-        bot.register_next_step_handler(msg, get_file)
     else:
         msg = bot.reply_to(message, "Unknown command, the commands available are: 'send mail, see unread mails and disconnect'")
         msg = bot.send_message(message.chat.id, "=D go another command!")

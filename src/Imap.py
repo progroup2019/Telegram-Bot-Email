@@ -76,3 +76,17 @@ def verifyLogin(email,password):
         return True
     except:
         return False
+
+#Using regex to obtain all urls in a text
+def take_urls(text):
+    urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+    return urls
+
+#verify all urls with WOT api
+def verify_urls(urls):
+    # reports = wot_reports_for_domains(urls, KEY)
+    secure = True
+    # for report in reports:
+    #     print (parse_attributes_for_report(report))
+    #     #validate for secure
+    return secure

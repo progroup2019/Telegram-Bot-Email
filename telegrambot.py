@@ -156,7 +156,7 @@ def send_mail_one(message):
 def send_mail_two(message):
     global subject
     subject = message.text
-    msg = bot.send_message(message.chat.id, "Do you want to attach a file?")
+    msg = bot.send_message(message.chat.id, "Do you want to attach a file?(Yes/No)")
     bot.register_next_step_handler(msg, send_mail_ask_for_files)
 
 #Set the Content of the mail

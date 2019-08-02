@@ -6,8 +6,9 @@ For virtualenv to install all dependencies behind.
 1. run: pip install pyTelegramBotAPI in your shell
 2. run: pip install telebot in your shell
 2. run: pip install wget in your shell
-Then run:
-    python telegrambot.py
+
+Then run python telegrambot.py
+    And establish a conversation with our bot @ProGroup2019Bot
 
 The password has to be an application password, it cant be your normal password for security ...
 
